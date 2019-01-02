@@ -41,11 +41,11 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
         char payload[80];
 
         if(strcmp(message->topic,"garage/temperature")==0){
-            sprintf(payload,"Temperature %d", getTemperatureF(get_dht11_temperature()));
+            sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
             mosquitto_publish(	mosq, NULL, "test", strlen(payload), payload, 0, false);
         }
         if(strcmp(message->topic,"garage/humidity")==0){
-            sprintf(payload,"Humidityure %d", get_dht11_humidity());
+            sprintf(payload,"Humidityure %f", get_dht11_humidity());
             mosquitto_publish(	mosq, NULL, "test", strlen(payload), payload, 0, false);
         }
         if(strcmp(message->topic,"garage/door")==0){
