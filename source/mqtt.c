@@ -1,7 +1,8 @@
 #include "../headers/mqtt.h"
 #include "../headers/main.h"
+#include "../headers/sensors.h"
 
-void mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
+int mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
      mosquitto_lib_init();
     mosq = mosquitto_new(NULL,true,NULL);
     if(!mosq){
@@ -18,11 +19,12 @@ void mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
         return 1;
     }
 
-    mosquitto_loop_start(mosq, -1, 1);
+    mosquitto_loop_start(mosq);
   
   mosquitto_subscribe(mosq,NULL,"garage/door",0);
   mosquitto_subscribe(mosq,NULL,"garage/humidity",0);
   mosquitto_subscribe(mosq,NULL,"garage/temperature",0);
+  return 0;
 }
 
 void mqtt_cleanup(struct mosquitto *mosq){
@@ -62,7 +64,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 
 void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 {
-	int i;
+	
 	if(!result){
 		/* Subscribe to broker information topics on successful connect. */
 		//mosquitto_subscribe(mosq, NULL, "$SYS/#", 2);

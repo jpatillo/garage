@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <signal.h>
+#include <string.h>
+#include <time.h>
 #include <wiringPi.h>
 
 #include "../headers/main.h"
@@ -71,7 +73,7 @@ void loop() {
     delay(2000);
    
     char display[80];
-    sprintf(display,"{Humidity: %d, Temperature: %d}",get_dht11_temperature(),get_dht11_humidity());
+    sprintf(display,"{Humidity: %f, Temperature: %f}",get_dht11_temperature(),get_dht11_humidity());
     
     mosquitto_publish(	mosq, NULL, "test", strlen(display), display, 0, false);
 
