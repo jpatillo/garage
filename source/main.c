@@ -73,7 +73,7 @@ void loop() {
     delay(2000);
    
     char display[80];
-    sprintf(display,"{Humidity: %f, Temperature: %f}",get_dht11_temperature(),get_dht11_humidity());
+    sprintf(display,"{Humidity: %f, Temperature: %f}",get_dht11_humidity(),get_dht11_temperature());
     
     mosquitto_publish(	mosq, NULL, "test", strlen(display), display, 0, false);
 
