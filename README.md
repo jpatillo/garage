@@ -1,7 +1,7 @@
 # Garage
 
-Build and run with `$ ./run.sh`   
-Run with `$ ./start.sh`
+Build with `$ ./build.sh`   
+Run with `$ ./run.sh`
 
 ## Directories
 * /bin - Files used to execute the module.
