@@ -1,14 +1,19 @@
 #include "../headers/sensors.h"
 
+double *dht11_temperature, *dht11_humidity;
 
 double getTemperatureF(double celsius){return (celsius * 9. / 5. + 32);}
 
+double get_dht11_temperature(){return *dht11_temperature;}
+double get_dht11_temperature_f(){return getTemperatureF(*dht11_temperature);}
+
+double get_dht11_humidity(){return *dht11_humidity;}
 
 /**
  * http://www.uugear.com/portfolio/read-dht1122-temperature-humidity-sensor-from-raspberry-pi/
  * TODO throw error if the pin has not been set.
  */
-int dht11_read(unsigned int pin, double* temperature, double* humidity)
+int dht11_read(unsigned int pin)
 {
 	uint8_t laststate	= HIGH;
 	uint8_t counter		= 0;
@@ -77,8 +82,8 @@ int dht11_read(unsigned int pin, double* temperature, double* humidity)
 		}
 		float f = c * 1.8f + 32;
 		printf( "Humidity = %.1f %% Temperature = %.1f *C (%.1f *F)\n", h, c, f );
-    *humidity = h;
-    *temperature = c;
+    *dht11_humidity = h;
+    *dht11_temperature = c;
     return 0;
 	}else  {
 		printf( "Data not good, skip\n" );

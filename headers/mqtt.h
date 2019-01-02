@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <mosquitto.h>
 
 void mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive);

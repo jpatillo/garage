@@ -1,8 +1,9 @@
 #include "../headers/mqtt.h"
+#include "../headers/main.h"
 
 void mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
      mosquitto_lib_init();
-    mosq *mosquitto_new(NULL,true,NULL);
+    mosq = mosquitto_new(NULL,true,NULL);
     if(!mosq){
             fprintf(stderr, "Error: Out of memory.\n");
             return 1;
@@ -12,12 +13,12 @@ void mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
     mosquitto_message_callback_set(mosq, mqtt_message_callback);
     mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
 
-    if(mosquitto_connect(mosq, host, port, keepalive)){
+    if(mosquitto_connect_async(mosq, host, port, keepalive)){
         fprintf(stderr, "Unable to connect.\n");
         return 1;
     }
 
-    mosquitto_loop_forever(mosq, -1, 1);
+    mosquitto_loop_start(mosq, -1, 1);
   
   mosquitto_subscribe(mosq,NULL,"garage/door",0);
   mosquitto_subscribe(mosq,NULL,"garage/humidity",0);
@@ -25,6 +26,7 @@ void mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
 }
 
 void mqtt_cleanup(struct mosquitto *mosq){
+    mosquitto_disconnect(mosq);
     mosquitto_destroy(mosq);
 	mosquitto_lib_cleanup();
 }
@@ -37,18 +39,18 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
         char payload[80];
 
         if(strcmp(message->topic,"garage/temperature")==0){
-            sprintf(payload,"Temperature %d", getTemperatureF(*dht11_temp));
+            sprintf(payload,"Temperature %d", getTemperatureF(get_dht11_temperature()));
             mosquitto_publish(	mosq, NULL, "test", strlen(payload), payload, 0, false);
         }
         if(strcmp(message->topic,"garage/humidity")==0){
-            sprintf(payload,"Humidityure %d", *dht11_humidity);
+            sprintf(payload,"Humidityure %d", get_dht11_humidity());
             mosquitto_publish(	mosq, NULL, "test", strlen(payload), payload, 0, false);
         }
         if(strcmp(message->topic,"garage/door")==0){
-            doorctrl->activate();
+            activateRelay(RELAY_PIN);
             delay( 1000 );
             // Make sure to deactivate so the doorbell button will work.
-            doorctrl->deactivate();
+            deactivateRelay(RELAY_PIN);
         }
 
 	}else{
