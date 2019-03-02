@@ -2,12 +2,13 @@
 #include "../headers/main.h"
 #include "../headers/sensors.h"
 
-int mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
-     mosquitto_lib_init();
+//TODO: it may not be necessary to have mosq as a param. The reference had to be returned because the param was not retaining the reference.
+struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
+    mosquitto_lib_init();
     mosq = mosquitto_new(NULL,true,NULL);
     if(!mosq){
             fprintf(stderr, "Error: Out of memory.\n");
-            return 1;
+            return NULL;
         }
     mosquitto_log_callback_set(mosq, mqtt_log_callback);
     mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
@@ -16,15 +17,16 @@ int mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
 
     if(mosquitto_connect_async(mosq, host, port, keepalive)){
         fprintf(stderr, "Unable to connect.\n");
-        return 1;
+        return NULL;
     }
 
     mosquitto_loop_start(mosq);
   
-  mosquitto_subscribe(mosq,NULL,"garage/door",0);
-  mosquitto_subscribe(mosq,NULL,"garage/humidity",0);
-  mosquitto_subscribe(mosq,NULL,"garage/temperature",0);
-  return 0;
+    mosquitto_subscribe(mosq,NULL,"garage/door",0);
+    mosquitto_subscribe(mosq,NULL,"garage/humidity",0);
+    mosquitto_subscribe(mosq,NULL,"garage/temperature",0);
+    
+    return mosq;
 }
 
 void mqtt_cleanup(struct mosquitto *mosq){
@@ -36,17 +38,17 @@ void mqtt_cleanup(struct mosquitto *mosq){
 void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
 {
 	if(message->payloadlen){
-		printf("%s %s\n", message->topic, message->payload);
+		printf("%s %s\n", message->topic, (char*)message->payload);
 
         char payload[80];
 
         if(strcmp(message->topic,"garage/temperature")==0){
             sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
-            mosquitto_publish(	mosq, NULL, "test", strlen(payload), payload, 0, false);
+            mosquitto_publish(	mosq, NULL, "environment", strlen(payload), payload, 0, false);
         }
         if(strcmp(message->topic,"garage/humidity")==0){
-            sprintf(payload,"Humidityure %f", get_dht11_humidity());
-            mosquitto_publish(	mosq, NULL, "test", strlen(payload), payload, 0, false);
+            sprintf(payload,"Humidity %f", get_dht11_humidity());
+            mosquitto_publish(	mosq, NULL, "environment", strlen(payload), payload, 0, false);
         }
         if(strcmp(message->topic,"garage/door")==0){
             activateRelay(RELAY_PIN);
@@ -69,7 +71,7 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 		/* Subscribe to broker information topics on successful connect. */
 		//mosquitto_subscribe(mosq, NULL, "$SYS/#", 2);
 
-        printf("Connected to mosquitto with code %i",result);
+        printf("Connected to mosquitto with code %i\n",result);
 	}else{
 		fprintf(stderr, "Connect failed\n");
 	}
@@ -89,5 +91,7 @@ void mqtt_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, in
 void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str)
 {
 	/* Print all log messages regardless of level. */
-	printf("%s\n", str);
+	printf("\e[32m%s\e[0m %s\n", "LOG",str);
+
+    //TODO: get these on a server!
 }
