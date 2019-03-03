@@ -5,6 +5,7 @@
 //TODO: it may not be necessary to have mosq as a param. The reference had to be returned because the param was not retaining the reference.
 struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
     mosquitto_lib_init();
+    
     mosq = mosquitto_new(NULL,true,NULL);
     if(!mosq){
             fprintf(stderr, "Error: Out of memory.\n");

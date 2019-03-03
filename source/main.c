@@ -15,6 +15,8 @@ time_t environment_timer;
 // MQTT
 struct mosquitto *mosq = NULL;
 configuration config;
+char* config_file = "default.config";
+
 
 static int configHandler(void* user, const char* section, const char* name,
                    const char* value)
@@ -64,7 +66,7 @@ void deactivateRelay(unsigned int pin) {
   digitalWrite( pin, HIGH );
 }
 
-char* config_file = "default.config";
+
 
 void setup() {
     // Handle ctrl+c

@@ -81,7 +81,7 @@ int dht11_read(unsigned int pin)
 			c = -c;
 		}
 		//float f = c * 1.8f + 32;
-		printf( "Humidity = %.1f %% Temperature = %.1f\n", h, c );
+		//printf( "Humidity = %.1f %% Temperature = %.1f\n", h, c );
     dht11_humidity = h;
     dht11_temperature = c;
     return 0;
