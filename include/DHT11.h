@@ -9,7 +9,7 @@ public:
   DHT11();
   DHT11(unsigned int pin);
 
-  void read_dht11_dat();
+  void read();
 
   double getHumidity();
   double getTemperature();

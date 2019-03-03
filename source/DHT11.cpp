@@ -21,7 +21,7 @@ void DHT11::setPin(unsigned int pin){_pin=pin;}
  * http://www.uugear.com/portfolio/read-dht1122-temperature-humidity-sensor-from-raspberry-pi/
  * TODO throw error if the pin has not been set.
  */
-void DHT11::read_dht11_dat()
+void DHT11::read()
 {
 	uint8_t laststate	= HIGH;
 	uint8_t counter		= 0;
