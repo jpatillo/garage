@@ -6,4 +6,5 @@ gpio write 4 1
 
 # Start the program
 # TODO adjust this to match the installed location
-./bin/garage
+cd /home/pi/garage/bin
+./garage --config default.config

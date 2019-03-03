@@ -1,6 +1,6 @@
+#!/usr/bin/env bash
 
 apt-get update
-
 
 # git - git repo
 # wiringpi - GPIO library for RaspberryPi
