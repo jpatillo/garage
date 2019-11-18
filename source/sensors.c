@@ -1,47 +1,40 @@
-#include <wiringPi.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include "DHT11.h"
+#include "../headers/sensors.h"
 
-#define MAX_TIMINGS	85
+double dht11_temperature, dht11_humidity;
 
-int data[5] = { 0, 0, 0, 0, 0 };
+double getTemperatureF(double celsius){return (celsius * 9. / 5. + 32);}
 
-DHT11::DHT11(){}
-DHT11::DHT11(unsigned int pin){_pin=pin;}
+double get_dht11_temperature(){return dht11_temperature;}
+double get_dht11_temperature_f(){return getTemperatureF(dht11_temperature);}
 
-double DHT11::getHumidity(){return humidity;}
-double DHT11::getTemperature(){return temperature;}
-double DHT11::getTemperatureF(){return (temperature * 9. / 5. + 32);}
-
-void DHT11::setPin(unsigned int pin){_pin=pin;}
+double get_dht11_humidity(){return dht11_humidity;}
 
 /**
  * http://www.uugear.com/portfolio/read-dht1122-temperature-humidity-sensor-from-raspberry-pi/
  * TODO throw error if the pin has not been set.
  */
-void DHT11::read()
+int dht11_read(unsigned int pin)
 {
 	uint8_t laststate	= HIGH;
 	uint8_t counter		= 0;
 	uint8_t j			= 0, i;
+    int data[5] = { 0, 0, 0, 0, 0 };
 
 	data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
 	/* pull pin down for 18 milliseconds */
-	pinMode( _pin, OUTPUT );
-	digitalWrite( _pin, LOW );
+	pinMode( pin, OUTPUT );
+	digitalWrite( pin, LOW );
 	delay( 18 );
 
 	/* prepare to read the pin */
-	pinMode( _pin, INPUT );
+	pinMode( pin, INPUT );
 
 	/* detect change and read data */
 	for ( i = 0; i < MAX_TIMINGS; i++ )
 	{
 		counter = 0;
-		while ( digitalRead( _pin ) == laststate )
+		while ( digitalRead( pin ) == laststate )
 		{
 			counter++;
 			delayMicroseconds( 1 );
@@ -50,7 +43,7 @@ void DHT11::read()
 				break;
 			}
 		}
-		laststate = digitalRead( _pin );
+		laststate = digitalRead( pin );
 
 		if ( counter == 255 )
 			break;
@@ -87,11 +80,13 @@ void DHT11::read()
 		{
 			c = -c;
 		}
-		float f = c * 1.8f + 32;
-		printf( "Humidity = %.1f %% Temperature = %.1f *C (%.1f *F)\n", h, c, f );
-    humidity = h;
-    temperature = c;
+		//float f = c * 1.8f + 32;
+		//printf( "Humidity = %.1f %% Temperature = %.1f\n", h, c );
+    dht11_humidity = h;
+    dht11_temperature = c;
+    return 0;
 	}else  {
 		printf( "Data not good, skip\n" );
+        return 1;
 	}
 }
