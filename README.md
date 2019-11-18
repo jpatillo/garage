@@ -2,6 +2,8 @@
 
 The garage project is a control and monitoring service for garages. 
 
+TODO: Move to gRPC so we can post to firebase and get some good security.
+
 Current capabilities include:
 - open/close door (single door)
 - post temperature and humidity on an interval
@@ -14,6 +16,7 @@ Current capabilities include:
 - 2-Channel relay
 
 TODO: gracefully quit if running as a service
+TODO: tls
 
 - Build with `$ ./build.sh`
 - Run with `$ ./run.sh`
