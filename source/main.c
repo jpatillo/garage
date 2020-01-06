@@ -109,7 +109,7 @@ void loop() {
     delay(2000);
    
     char display[80];
-    char* topic = "environment";
+    char* topic = "garage/34567/telemetry";
     int size = sprintf(display,"{Humidity: %f, Temperature: %ff}",get_dht11_humidity(),get_dht11_temperature_f());
     int pr = mosquitto_publish(	mosq, NULL, topic, size, display, 0, false);
     

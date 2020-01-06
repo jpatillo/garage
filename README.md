@@ -1,10 +1,13 @@
 # Garage
 
-The garage project is a control and monitoring service for garages. 
+The garage project is a control and monitoring service for garages.
+
+This project has been migrated from C++ to C.
 
 TODO: Move to gRPC so we can post to firebase and get some good security.
 
 Current capabilities include:
+
 - open/close door (single door)
 - post temperature and humidity on an interval
 - receive requests to post temperature and humidity
@@ -27,12 +30,25 @@ TODO: tls
 - /bin - Files used to execute the module.
 - /build - Files created during the build process
 - /include - Header files (.h)
-- /source - Source files (.cpp)
+- /source - Source files (.c)
 
 ## External Code
-Config file code from https://github.com/benhoyt/inih. Consists of ini.h and ini.c
 
-## Notes
+Config file code from <https://github.com/benhoyt/inih.> Consists of ini.h and ini.c
+
+## MQTT
+
+The mosquitto broker and client libraries are being used in the project. The IoT devices are currently running single threaded.
+
+Subscribes to:
+
+- garage/temperature
+- garage/humidity
+- garage/door
+
+Publishes to:
+
+- 
 
 For my future sanity:
 
@@ -46,7 +62,3 @@ struct mosquitto_message {
     bool retain;
 };
 ```
-
-# Server
-
-Write an application that will listen for logs published from the garage. The logs should be written to a sql database.

@@ -6,7 +6,7 @@
 struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
     mosquitto_lib_init();
     
-    mosq = mosquitto_new(NULL,true,NULL);
+    mosq = mosquitto_new("34567",true,NULL);
     if(!mosq) {
             fprintf(stderr, "Error: Out of memory.\n");
             return NULL;
@@ -24,9 +24,9 @@ struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* host, int port, int k
 
     mosquitto_loop_start(mosq);
   
-    mosquitto_subscribe(mosq,NULL,"garage/door",0);
-    mosquitto_subscribe(mosq,NULL,"garage/humidity",0);
-    mosquitto_subscribe(mosq,NULL,"garage/temperature",0);
+    mosquitto_subscribe(mosq,NULL,"garage/34567/command/door",1);
+    mosquitto_subscribe(mosq,NULL,"garage/34567/command/humidity",0);
+    mosquitto_subscribe(mosq,NULL,"garage/34567/command/temperature",0);
     
     return mosq;
 }
@@ -44,19 +44,20 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 
         char payload[80];
 
-        if(strcmp(message->topic,"garage/temperature")==0){
+        if(strcmp(message->topic,"garage/34567/command/temperature")==0){
             sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
-            mosquitto_publish(	mosq, NULL, "environment", strlen(payload), payload, 0, false);
+            mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/temperature", strlen(payload), payload, 0, false);
         }
-        if(strcmp(message->topic,"garage/humidity")==0){
+        if(strcmp(message->topic,"garage/34567/command/humidity")==0){
             sprintf(payload,"Humidity %f", get_dht11_humidity());
-            mosquitto_publish(	mosq, NULL, "environment", strlen(payload), payload, 0, false);
+            mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/humidity", strlen(payload), payload, 0, false);
         }
-        if(strcmp(message->topic,"garage/door")==0){
+        if(strcmp(message->topic,"garage/34567/command/door")==0){
             activateRelay(RELAY_PIN);
             delay( 1000 );
             // Make sure to deactivate so the doorbell button will work.
             deactivateRelay(RELAY_PIN);
+            //TODO: add door sensors so we know what the door is doing. Then we can error check and publish the status
         }
 
 	}else{
@@ -89,7 +90,7 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *obj, int result)
             break;
             case MOSQ_ERR_INVAL: printf("Invalid parameters while trying to reconnect to broker.");
             break;
-            case MOSQ_ERR_ERRNO: printf("Error reconnecting to broker.\n%s",strerror_r());
+            case MOSQ_ERR_ERRNO: printf("Error reconnecting to broker.");/*\n%s",strerror_r());*/
             break;
         }
     }
