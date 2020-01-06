@@ -4,13 +4,17 @@ The garage project is a control and monitoring service for garages.
 
 This project has been migrated from C++ to C.
 
-TODO: Move to gRPC so we can post to firebase and get some good security.
-
 Current capabilities include:
 
 - open/close door (single door)
 - post temperature and humidity on an interval
 - receive requests to post temperature and humidity
+
+## TODO
+
+- tls
+- change hard-coded device id
+  - DS18B20
 
 ## HARDWARE
 
@@ -18,8 +22,7 @@ Current capabilities include:
 - DHT11 Temperature and Humidity sensor
 - 2-Channel relay
 
-TODO: gracefully quit if running as a service
-TODO: tls
+## BUILD
 
 - Build with `$ ./build.sh`
 - Run with `$ ./run.sh`
