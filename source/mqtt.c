@@ -23,11 +23,7 @@ struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* host, int port, int k
     }
 
     mosquitto_loop_start(mosq);
-  
-    mosquitto_subscribe(mosq,NULL,"garage/34567/command/door",1);
-    mosquitto_subscribe(mosq,NULL,"garage/34567/command/humidity",0);
-    mosquitto_subscribe(mosq,NULL,"garage/34567/command/temperature",0);
-    
+      
     return mosq;
 }
 
@@ -58,6 +54,9 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
             // Make sure to deactivate so the doorbell button will work.
             deactivateRelay(RELAY_PIN);
             //TODO: add door sensors so we know what the door is doing. Then we can error check and publish the status
+
+            char* status = "{msg:'Door Activated'}\0";
+            mosquitto_publish(	mosq, NULL, "garage/34567/status", strlen(status), status, 0, false);
         }
 
 	}else{
@@ -69,13 +68,16 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 
 void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 {
-	
 	if(!result){
 		/* Subscribe to broker information topics on successful connect. */
-		//mosquitto_subscribe(mosq, NULL, "$SYS/#", 2);
+        mosquitto_subscribe(mosq,NULL,"garage/34567/command/door",1);
+        mosquitto_subscribe(mosq,NULL,"garage/34567/command/humidity",0);
+        mosquitto_subscribe(mosq,NULL,"garage/34567/command/temperature",0);
 
         printf("Connected to mosquitto with code %i\n",result);
-	}else{
+        char* status = "{msg:connected}\0";
+        mosquitto_publish(	mosq, NULL, "garage/34567/status", strlen(status), status, 0, false);
+	} else {
 		fprintf(stderr, "Connect failed\n");
 	}
 }
@@ -112,5 +114,6 @@ void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const 
 	/* Print all log messages regardless of level. */
 	printf("\e[32m%s\e[0m %s\n", "LOG",str);
 
-    //TODO: get these on a server!
+    // Get these on a server!
+    mosquitto_publish(	mosq, NULL, "garage/34567/log", strlen(str), str, 0, false);
 }
