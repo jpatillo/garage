@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <string.h>
 #include <time.h>
@@ -12,11 +13,12 @@
 int8_t volatile seagulls = 1; // loop control
 time_t environment_timer;
 
+char* deviceid = "34567";
+
 // MQTT
 struct mosquitto *mosq = NULL;
 configuration config;
 char* config_file = "default.config";
-
 
 static int configHandler(void* user, const char* section, const char* name,
                    const char* value)
@@ -73,7 +75,7 @@ void on_message_received(struct mosquitto *mosq, void *userdata, const struct mo
 
     char payload[80];
 
-    if(strcmp(message->topic,"garage/34567/command/door")==0){
+    if(strcmp(message->topic,mqtt_topic_command_door)==0){
       activateRelay(RELAY_PIN);
       delay( 1000 );
       // Make sure to deactivate so the doorbell button will work.
@@ -81,15 +83,15 @@ void on_message_received(struct mosquitto *mosq, void *userdata, const struct mo
       //TODO: add door sensors so we know what the door is doing. Then we can error check and publish the status
 
       char* status = "{msg:'Door Activated'}\0";
-      mosquitto_publish(	mosq, NULL, "garage/34567/status", strlen(status), status, 0, false);
+      mosquitto_publish(	mosq, NULL, mqtt_topic_status, strlen(status), status, 0, false);
     }
-    else if(strcmp(message->topic,"garage/34567/command/temperature")==0){
-      sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
-      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/temperature", strlen(payload), payload, 0, false);
+    else if(strcmp(message->topic,mqtt_topic_command_temperature)==0){
+      sprintf(payload,"{temperature: %f}", getTemperatureF(get_dht11_temperature()));
+      mosquitto_publish(	mosq, NULL, mqtt_topic_telemetry, strlen(payload), payload, 0, false);
     }
-    else if(strcmp(message->topic,"garage/34567/command/humidity")==0){
-      sprintf(payload,"Humidity %f", get_dht11_humidity());
-      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/humidity", strlen(payload), payload, 0, false);
+    else if(strcmp(message->topic,mqtt_topic_command_humidity)==0){
+      sprintf(payload,"{humidity: %f}", get_dht11_humidity());
+      mosquitto_publish(	mosq, NULL, mqtt_topic_telemetry, strlen(payload), payload, 0, false);
     }
     else {
       printf("The message does not have a handler.");
@@ -118,15 +120,18 @@ void setup() {
     printf("\e[31mCan't load \'%s\'.\e[0m Using defaults.\n", config_file);
   }
   setRelayPin(RELAY_PIN);
+
   // We require a host to run.
   if(config.mqtt_host==NULL) {
     fprintf(stderr, "\e[31mNo host provided. Bye.\e[0m\n");
     exit(1);
   }
-  mosq = mqtt_setup(mosq, on_message_received); 
+  mosq = mqtt_setup(mosq, deviceid, on_message_received); 
+  if(mosq==NULL) {
+    fprintf(stderr, "\e[31mError initializing MQTT. Exiting.\e[0m\n");
+    exit(1);
+  }
   mqtt_connect(mosq, config.mqtt_host, config.mqtt_port, config.mqtt_keepalive); 
-  //TODO: if mosq is null then we need to go into a reconnect loop. there is no point
-  // continuing if there is no connection.
   // Start timers
   time(&environment_timer);
 }
@@ -139,9 +144,8 @@ void loop() {
     delay(2000);
    
     char display[80];
-    char* topic = "garage/34567/telemetry";
     int size = sprintf(display,"{Humidity: %f, Temperature: %ff}",get_dht11_humidity(),get_dht11_temperature_f());
-    int pr = mosquitto_publish(	mosq, NULL, topic, size, display, 0, false);
+    int pr = mosquitto_publish(	mosq, NULL, mqtt_topic_telemetry, size, display, 0, false);
     
     if(pr!=MOSQ_ERR_SUCCESS){
       char* msg;
@@ -154,6 +158,7 @@ void loop() {
         break;
         case MOSQ_ERR_NO_CONN:
         msg = "No Connection";
+        //TODO: should we start a new connection (and loop/thread) or can we just call reconnect?
         mqtt_connect(mosq, config.mqtt_host, config.mqtt_port, config.mqtt_keepalive); 
         break;
         case MOSQ_ERR_PROTOCOL:
