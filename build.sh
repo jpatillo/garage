@@ -12,7 +12,7 @@ mkdir -p /opt/garage
 
 # Build
 cd ./source
-gcc main.c sensors.c mqtt.c ini.c -o ../bin/garage -Wall -lwiringPi -lmosquitto
+gcc main.c sensors.c mqtt.c ini.c util.c -o ../bin/garage -Wall -lwiringPi -lmosquitto
 
 # Copy files to the installation folder
 cd ..

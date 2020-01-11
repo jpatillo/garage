@@ -5,7 +5,9 @@
 #include <string.h>
 #include <mosquitto.h>
 
-struct mosquitto *mqtt_setup(struct mosquitto *mosq, void (*mqtt_message_callback)(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message));
+struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* id,
+    void (*mqtt_connect_callback)(struct mosquitto *mosq, void *userdata, int result),
+    void (*mqtt_message_callback)(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message));
 int mqtt_connect(struct mosquitto *mosq, char* host, int port, int keepalive);
 void mqtt_cleanup(struct mosquitto *mosq);
 //void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message);
