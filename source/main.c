@@ -73,14 +73,6 @@ void on_message_received(struct mosquitto *mosq, void *userdata, const struct mo
 
     char payload[80];
 
-    if(strcmp(message->topic,"garage/34567/command/temperature")==0){
-      sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
-      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/temperature", strlen(payload), payload, 0, false);
-    }
-    if(strcmp(message->topic,"garage/34567/command/humidity")==0){
-      sprintf(payload,"Humidity %f", get_dht11_humidity());
-      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/humidity", strlen(payload), payload, 0, false);
-    }
     if(strcmp(message->topic,"garage/34567/command/door")==0){
       activateRelay(RELAY_PIN);
       delay( 1000 );
@@ -91,6 +83,18 @@ void on_message_received(struct mosquitto *mosq, void *userdata, const struct mo
       char* status = "{msg:'Door Activated'}\0";
       mosquitto_publish(	mosq, NULL, "garage/34567/status", strlen(status), status, 0, false);
     }
+    else if(strcmp(message->topic,"garage/34567/command/temperature")==0){
+      sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
+      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/temperature", strlen(payload), payload, 0, false);
+    }
+    else if(strcmp(message->topic,"garage/34567/command/humidity")==0){
+      sprintf(payload,"Humidity %f", get_dht11_humidity());
+      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/humidity", strlen(payload), payload, 0, false);
+    }
+    else {
+      printf("The message does not have a handler.");
+    }
+    
 
 	}else{
 		printf("%s (null)\n", message->topic);
@@ -150,6 +154,7 @@ void loop() {
         break;
         case MOSQ_ERR_NO_CONN:
         msg = "No Connection";
+        mqtt_connect(mosq, config.mqtt_host, config.mqtt_port, config.mqtt_keepalive); 
         break;
         case MOSQ_ERR_PROTOCOL:
         msg = "Protocol Error";
