@@ -15,8 +15,4 @@ typedef struct
     int env_update;
 } configuration;
 
-void setRelayPin(unsigned int pin);
-void activateRelay(unsigned int pin);
-void deactivateRelay(unsigned int pin);
-
 #endif

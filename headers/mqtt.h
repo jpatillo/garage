@@ -1,19 +1,17 @@
 #ifndef MQTT_H_
 #define MQTT_H_
 
-#include <stdio.h>
-#include <string.h>
 #include <mosquitto.h>
 
+extern char *mqtt_topic_command_door;
+extern char *mqtt_topic_command_temperature;
+extern char *mqtt_topic_command_humidity;
+extern char *mqtt_topic_status;
+extern char *mqtt_topic_telemetry;
+
 struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* id,
-    void (*mqtt_connect_callback)(struct mosquitto *mosq, void *userdata, int result),
     void (*mqtt_message_callback)(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message));
 int mqtt_connect(struct mosquitto *mosq, char* host, int port, int keepalive);
 void mqtt_cleanup(struct mosquitto *mosq);
-//void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message);
-void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result);
-void mqtt_disconnect_callback(struct mosquitto *mosq, void *obj, int result);
-void mqtt_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos);
-void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str);
 
 #endif

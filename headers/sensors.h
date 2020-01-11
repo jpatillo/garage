@@ -1,13 +1,8 @@
-#include <wiringPi.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-#define MAX_TIMINGS	85
+#ifndef SENSORS_H_
+#define SENSORS_H_
 
 // Helper function that converts celsius to fahrenheit.
 double getTemperatureF(double celsius);
-
 // Returns the last temperature read by the DHT11 sensor.
 double get_dht11_temperature();
 // Returns the last temperature read by the DHT11 sensor in fahrenheit.
@@ -18,3 +13,5 @@ double get_dht11_humidity();
 //  get_dht11_temperature()
 //  get_dht11_humidity()
 int dht11_read(unsigned int pin);
+
+#endif

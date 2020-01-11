@@ -1,4 +1,9 @@
-#include "../headers/sensors.h"
+#include <wiringPi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#define MAX_TIMINGS	85
 
 double dht11_temperature, dht11_humidity;
 
