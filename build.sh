@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+#clean the build folder
+rm -R bin
+
 # Install dependencies
 apt-get update
 # wiringpi - GPIO library for RaspberryPi
@@ -16,14 +19,19 @@ gcc main.c sensors.c mqtt.c ini.c util.c -o ../bin/garage -Wall -lwiringPi -lmos
 
 # Copy files to the installation folder
 cd ..
-cp ./bin/garage /opt/garage
-cp ./install/default.config /opt/garage
-cp ./install/run.sh /opt/garage
+cp ./bin/garage /opt/garage/garage
+cp ./install/default.config /opt/garage/default.config
+cp ./install/run.sh /opt/garage/run.sh
 # Manage file permissions
-chmod 744 /opt/garage/run.sh
+chmod 755 /opt/garage/run.sh
+chmod 755 /opt/garage/garage
 
 # Create daemon
-sudo cp ./install/garage.service /etc/systemd/system
+sudo cp ./install/garage.service /etc/systemd/system/garage.service
+sudo chmod 755 /etc/systemd/system/garage.service
+# Stop the daemon if it is already running.
+sudo systemctl stop garage
+# Start daemon and set to run on boot
 sudo systemctl start garage
 sudo systemctl enable garage
 sudo systemctl daemon-reload
