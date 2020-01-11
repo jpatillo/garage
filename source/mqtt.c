@@ -1,31 +1,37 @@
 #include "../headers/mqtt.h"
-#include "../headers/main.h"
-#include "../headers/sensors.h"
 
 //TODO: it may not be necessary to have mosq as a param. The reference had to be returned because the param was not retaining the reference.
-struct mosquitto *mqtt_setup(struct mosquitto *mosq, char* host, int port, int keepalive){
+struct mosquitto *mqtt_setup(struct mosquitto *mosq, void (*mqtt_message_callback)(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)){
     mosquitto_lib_init();
     
     mosq = mosquitto_new("34567",true,NULL);
     if(!mosq) {
             fprintf(stderr, "Error: Out of memory.\n");
             return NULL;
-        }
+    }
     mosquitto_log_callback_set(mosq, mqtt_log_callback);
     mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
     mosquitto_message_callback_set(mosq, mqtt_message_callback);
     mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
     mosquitto_disconnect_callback_set(mosq,mqtt_disconnect_callback);
-
-    if(mosquitto_connect_async(mosq, host, port, keepalive)){
-        fprintf(stderr, "Unable to connect.\n");
-        return NULL;
-    }
-
-    mosquitto_loop_start(mosq);
       
     return mosq;
 }
+
+int mqtt_connect(struct mosquitto *mosq, char* host, int port, int keepalive) {
+    if(mosquitto_connect_async(mosq, host, port, keepalive)){
+        fprintf(stderr, "Unable to connect.\n");
+        return 1;
+    }
+
+    if(mosquitto_loop_start(mosq)) {
+        fprintf(stderr, "Unable to start connection loop.\n");
+        return 1;
+    }
+
+    return 0;
+}
+
 
 void mqtt_cleanup(struct mosquitto *mosq){
     mosquitto_disconnect(mosq);
@@ -33,41 +39,8 @@ void mqtt_cleanup(struct mosquitto *mosq){
 	mosquitto_lib_cleanup();
 }
 
-void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
-{
-	if(message->payloadlen){
-		printf("%s %s\n", message->topic, (char*)message->payload);
-
-        char payload[80];
-
-        if(strcmp(message->topic,"garage/34567/command/temperature")==0){
-            sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
-            mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/temperature", strlen(payload), payload, 0, false);
-        }
-        if(strcmp(message->topic,"garage/34567/command/humidity")==0){
-            sprintf(payload,"Humidity %f", get_dht11_humidity());
-            mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/humidity", strlen(payload), payload, 0, false);
-        }
-        if(strcmp(message->topic,"garage/34567/command/door")==0){
-            activateRelay(RELAY_PIN);
-            delay( 1000 );
-            // Make sure to deactivate so the doorbell button will work.
-            deactivateRelay(RELAY_PIN);
-            //TODO: add door sensors so we know what the door is doing. Then we can error check and publish the status
-
-            char* status = "{msg:'Door Activated'}\0";
-            mosquitto_publish(	mosq, NULL, "garage/34567/status", strlen(status), status, 0, false);
-        }
-
-	}else{
-		printf("%s (null)\n", message->topic);
-	}
-	fflush(stdout);
-
-}
-
 void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
-{
+{   
 	if(!result){
 		/* Subscribe to broker information topics on successful connect. */
         mosquitto_subscribe(mosq,NULL,"garage/34567/command/door",1);
@@ -115,5 +88,5 @@ void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const 
 	printf("\e[32m%s\e[0m %s\n", "LOG",str);
 
     // Get these on a server!
-    mosquitto_publish(	mosq, NULL, "garage/34567/log", strlen(str), str, 0, false);
+    //mosquitto_publish(	mosq, NULL, "garage/34567/log", strlen(str), str, 0, false);
 }
