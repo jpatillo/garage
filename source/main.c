@@ -66,45 +66,71 @@ void deactivateRelay(unsigned int pin) {
   digitalWrite( pin, HIGH );
 }
 
+void on_message_received(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
+{
+	if(message->payloadlen){
+		printf("%s %s\n", message->topic, (char*)message->payload);
 
+    char payload[80];
+
+    if(strcmp(message->topic,"garage/34567/command/temperature")==0){
+      sprintf(payload,"Temperature %f", getTemperatureF(get_dht11_temperature()));
+      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/temperature", strlen(payload), payload, 0, false);
+    }
+    if(strcmp(message->topic,"garage/34567/command/humidity")==0){
+      sprintf(payload,"Humidity %f", get_dht11_humidity());
+      mosquitto_publish(	mosq, NULL, "garage/34567/telemetry/humidity", strlen(payload), payload, 0, false);
+    }
+    if(strcmp(message->topic,"garage/34567/command/door")==0){
+      activateRelay(RELAY_PIN);
+      delay( 1000 );
+      // Make sure to deactivate so the doorbell button will work.
+      deactivateRelay(RELAY_PIN);
+      //TODO: add door sensors so we know what the door is doing. Then we can error check and publish the status
+
+      char* status = "{msg:'Door Activated'}\0";
+      mosquitto_publish(	mosq, NULL, "garage/34567/status", strlen(status), status, 0, false);
+    }
+
+	}else{
+		printf("%s (null)\n", message->topic);
+	}
+	fflush(stdout);
+
+}
 
 void setup() {
-    // Handle ctrl+c
-    signal (SIGINT, interruptHandler);
-
-    if ( wiringPiSetup() == -1 ) {
-            fprintf(stderr, "\e[31mWiringPi is not installed. Bye.\e[0m\n");
-            exit( 1 );
-    }
-
-    // Set the config to defaults. A config file or command line argument is required to get a host for the mqtt broker.
-    config = (configuration) {1883,NULL,60,DHT11_PIN,RELAY_PIN,DEFAULT_ENVIRONMENT_INTERVAL};
-    // Try to update the config from a file
-    if (ini_parse(config_file, configHandler, &config) < 0) {
-        printf("\e[31mCan't load \'%s\'.\e[0m Using defaults.\n", config_file);
-    }
-
-    // We require a host to run.
-    if(config.mqtt_host==NULL) {
-      fprintf(stderr, "\e[31mNo host provided. Bye.\e[0m\n");
-      exit(1);
-    }
-
-    setRelayPin(RELAY_PIN);
-    
-    
-   mosq = mqtt_setup(mosq, config.mqtt_host, config.mqtt_port, config.mqtt_keepalive);
-  
-
+  // Handle ctrl+c
+  signal (SIGINT, interruptHandler);
+  // Confirm wiringPi installation
+  if ( wiringPiSetup() == -1 ) {
+    fprintf(stderr, "\e[31mWiringPi is not installed. Bye.\e[0m\n");
+    exit( 1 );
+  }
+  // Set the config to defaults. A config file or command line argument is required to get a host for the mqtt broker.
+  config = (configuration) {1883,NULL,60,DHT11_PIN,RELAY_PIN,DEFAULT_ENVIRONMENT_INTERVAL};
+  // Try to update the config from a file
+  if (ini_parse(config_file, configHandler, &config) < 0) {
+    printf("\e[31mCan't load \'%s\'.\e[0m Using defaults.\n", config_file);
+  }
+  setRelayPin(RELAY_PIN);
+  // We require a host to run.
+  if(config.mqtt_host==NULL) {
+    fprintf(stderr, "\e[31mNo host provided. Bye.\e[0m\n");
+    exit(1);
+  }
+  mosq = mqtt_setup(mosq, on_message_received); 
+  mqtt_connect(mosq, config.mqtt_host, config.mqtt_port, config.mqtt_keepalive); 
+  //TODO: if mosq is null then we need to go into a reconnect loop. there is no point
+  // continuing if there is no connection.
   // Start timers
   time(&environment_timer);
 }
 
-
-
 void loop() {
 
   if(difftime(time(0),environment_timer) > config.env_update) {
+
     dht11_read(DHT11_PIN);
     delay(2000);
    
