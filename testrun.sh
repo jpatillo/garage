@@ -3,9 +3,8 @@
 # Create install location
 mkdir -p test
 
-# Build
-cd ./source
-gcc main.c sensors.c mqtt.c ini.c util.c -o ../test/garage -Wall -lwiringPi -lmosquitto
+# Compile
+./compile.sh
 
 # Copy files to the installation folder
 cd ..

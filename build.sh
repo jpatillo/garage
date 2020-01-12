@@ -13,9 +13,8 @@ apt-get install mosquitto-clients wiringpi -y
 mkdir -p bin
 mkdir -p /opt/garage
 
-# Build
-cd ./source
-gcc main.c sensors.c mqtt.c ini.c util.c -o ../bin/garage -Wall -lwiringPi -lmosquitto
+# Compile
+./compile.sh
 
 # Copy files to the installation folder
 cd ..
