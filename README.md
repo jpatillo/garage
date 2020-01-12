@@ -1,6 +1,6 @@
 # Garage
 
-The garage project is a control and monitoring service for garages.
+The garage project is a control and monitoring service for garages. This module is the garage controller itself and performs the open/close function.
 
 This project has been migrated from C++ to C.
 
@@ -14,7 +14,7 @@ Current capabilities include:
 
 - tls
 - change hard-coded device id
-  - DS18B20
+  - DS18B20 - connect to the board to provide a unique id
 
 ## HARDWARE
 
@@ -24,34 +24,36 @@ Current capabilities include:
 
 ## BUILD
 
-- Build with `$ ./build.sh`
-- Run with `$ ./run.sh`
-- As a daemon `$ ./daemon.sh`
+- Build and install with `$ ./build.sh`
+- Test with `$ ./testrun.sh`
 
 ## Directories
 
-- /bin - Files used to execute the module.
+- /install - Files used to install and run the application.
 - /build - Files created during the build process
-- /include - Header files (.h)
+- /headers - Header files (.h)
 - /source - Source files (.c)
 
-## External Code
+## Library Code
 
 Config file code from <https://github.com/benhoyt/inih.> Consists of ini.h and ini.c
 
 ## MQTT
 
-The mosquitto broker and client libraries are being used in the project. The IoT devices are currently running single threaded.
+The mosquitto broker and client libraries are being used in the project. Clients spawn a new thread (handled by the library) to handle requests.
 
 Subscribes to:
 
-- garage/temperature
-- garage/humidity
-- garage/door
+- garage/_clientId_/command/temperature
+- garage/_clientId_/command/humidity
+- garage/_clientId_/command/door
 
 Publishes to:
 
-- 
+- garage/_clientId_/status
+- garage/_clientId_/telemetry
+
+### API Notes
 
 For my future sanity:
 
