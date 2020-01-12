@@ -52,18 +52,3 @@ Publishes to:
 
 - garage/_clientId_/status
 - garage/_clientId_/telemetry
-
-### API Notes
-
-For my future sanity:
-
-```c
-struct mosquitto_message {
-    uint16_t mid;
-    char *topic;
-    uint8_t *payload;
-    uint32_t payloadlen;
-    int qos;
-    bool retain;
-};
-```
