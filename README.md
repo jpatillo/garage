@@ -2,6 +2,9 @@
 
 The garage project is a control and monitoring service for garages. This module is the garage controller itself and performs the open/close function.
 
+Server Backend <https://github.com/jpatillo/garage-api>   
+Android Project <https://github.com/jpatillo/garage-android>
+
 This project has been migrated from C++ to C.
 
 Current capabilities include:
