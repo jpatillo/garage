@@ -9,7 +9,7 @@ This project has been migrated from C++ to C.
 
 Current capabilities include:
 
-- open/close door (single door)
+- receive requests to open/close door (single door)
 - post temperature and humidity on an interval
 - receive requests to post temperature and humidity
 
