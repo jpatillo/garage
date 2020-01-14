@@ -18,6 +18,12 @@ Current capabilities include:
 - tls
 - change hard-coded device id
   - DS18B20 - connect to the board to provide a unique id
+- ability for user to change telemetry reporting interval
+
+- Once the hardware is somewhere near being finalized, a qr-code with the device id can be put on the housing. This will allow the app to scan it and add it.
+- Set the device hosts/hostname to the device id for easy network identification
+- Need a way to do user setup on the device to connect it to wifi.
+  - Start the device as an AP with a webpage that the user can log into and change settings via wifi?
 
 ## HARDWARE
 
