@@ -7,7 +7,7 @@ rm -R bin
 apt-get update
 # wiringpi - GPIO library for RaspberryPi
 # mosquitto-clients - Network communication for mqtt
-apt-get install mosquitto-clients wiringpi -y
+apt-get install mosquitto-clients wiringpi libmosquitto-dev libmosquittopp-dev libssl-dev -y
 
 # Create install location
 mkdir -p bin
@@ -17,7 +17,7 @@ mkdir -p /opt/garage
 ./compile.sh
 
 # Copy files to the installation folder
-cd ..
+
 cp ./bin/garage /opt/garage/garage
 cp ./install/default.config /opt/garage/default.config
 cp ./install/run.sh /opt/garage/run.sh
